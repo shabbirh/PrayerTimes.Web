@@ -1,0 +1,150 @@
+﻿@page
+@using PrayerTimes.Library.Enumerations
+@model IndexModel
+
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Muslim Prayer Time Calculator</h1>
+    <p>Calculate the prayer times for your current location.</p>
+</div>
+
+<div class="align-content-center">
+<form method="post">
+    <table class="table-borderless table-active table-primary">
+        <tr>
+            <td>Latitude: </td>
+            <td>
+                <input class="form-control"
+                       asp-for="PrayerTimeCalculatorModel.Latitude"
+                       type="text"
+                       id="latitude" />
+            </td>
+        </tr>
+        <tr>
+            <td>Longitude: </td>
+            <td>
+                <input class="form-control"
+                       asp-for="PrayerTimeCalculatorModel.Longitude"
+                       type="text"
+                       id="longitude" />
+            </td>
+        </tr>
+        <tr>
+            <td>Altitude: </td>
+            <td>
+                <input class="form-control"
+                       asp-for="PrayerTimeCalculatorModel.Altitude"
+                       type="text"
+                       id="altitude" />
+            </td>
+        </tr>
+        <tr>
+            <td>Date: </td>
+            <td>
+                <input class="form-control"
+                       asp-for="PrayerTimeCalculatorModel.CalculationDate"
+                       type="datetime"
+                       id="dateSelector"
+                       value="@DateTime.Now" />
+            </td>
+        </tr>
+
+        <tr>
+            <td>Lunar Hijri Offset: </td>
+            <td>
+                <input class="form-control"
+                       asp-for="PrayerTimeCalculatorModel.LunarHijriOffset"
+                       type="text"
+                       id="lunarHijriOffset"
+                       value="0" />
+            </td>
+        </tr>
+
+        <tr>
+            <td>Calculation Method: </td>
+            <td>
+                <select asp-for="PrayerTimeCalculatorModel.CalculationMethodPreset"
+                        asp-items="Html.GetEnumSelectList<CalculationMethodPreset>()"
+                        class="form-control">
+                    <option selected="selected" value="">Please select a calculation method</option>
+                </select>
+            </td>
+        </tr>
+
+        <tr>
+            <td>Timezone: </td>
+            <td>
+                <select asp-for="PrayerTimeCalculatorModel.TimeZone"
+                        asp-items="IndexModel.GetCountriesList()"
+                        class="form-control"
+                        id="countryDropDownList">
+                    <option selected="selected" value="">Please select your country</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Daylight Savings Time: </td>
+            <td>
+                <input class="form-check-input"
+                       asp-for="PrayerTimeCalculatorModel.DayLightSavingsTime"
+                       type="checkbox"
+                       id="daylightSavingsTime" />
+            </td>
+        </tr>
+
+        <tr>
+            <td></td>
+            <td>
+                <input class="btn-primary"
+                       type="submit"
+                       value="Calculate"
+                       asp-page-handler="Submit" />
+            </td>
+        </tr>
+    </table>
+    <hr />
+</form>
+</div>
+<div class="align-content-lg-end">
+    <p id="prayer-times" class="table-info table-success table-bordered">
+        @Html.Raw(Model.PrayerTimes)
+    </p>
+</div>
+<div class="alert-danger">
+    <p id="location-info">
+
+    </p>
+</div>
+
+
+<script>
+
+
+    window.onload = getLocation();
+
+    var x = document.getElementById("location-info");
+    var latForm = document.getElementById("latitude");
+    var longForm = document.getElementById("longitude");
+    var altForm = document.getElementById("altitude");
+
+
+
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(showPosition);
+        } else {
+            x.innerHTML = "Geolocation is not supported by this browser.";
+        }
+    }
+
+    function showPosition(position) {
+
+        latForm.value = position.coords.latitude;
+        longForm.value = position.coords.longitude;
+        altForm.value = position.coords.altitude;
+
+    }
+</script>
