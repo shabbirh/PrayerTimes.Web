@@ -8,129 +8,109 @@
 
 <div class="text-center">
     <h1 class="display-4">Muslim Prayer Time Calculator</h1>
-    <p>Calculate the prayer times for your current location.</p>
+    <p>Calculate the prayer times for your current location (multiple methods).</p>
 </div>
-
-<div class="align-content-center">
-<form method="post">
-    <table class="table-borderless table-active table-primary">
-        <tr>
-            <td>Latitude: </td>
-            <td>
-                <input class="form-control"
-                       asp-for="PrayerTimeCalculatorModel.Latitude"
-                       type="text"
-                       id="latitude" />
-            </td>
-        </tr>
-        <tr>
-            <td>Longitude: </td>
-            <td>
-                <input class="form-control"
-                       asp-for="PrayerTimeCalculatorModel.Longitude"
-                       type="text"
-                       id="longitude" />
-            </td>
-        </tr>
-        <tr>
-            <td>Altitude: </td>
-            <td>
-                <input class="form-control"
-                       asp-for="PrayerTimeCalculatorModel.Altitude"
-                       type="text"
-                       id="altitude" />
-            </td>
-        </tr>
-        <tr>
-            <td>Date: </td>
-            <td>
-                <input class="form-control"
-                       asp-for="PrayerTimeCalculatorModel.CalculationDate"
-                       type="datetime"
-                       id="dateSelector"
-                       value="@DateTime.Now" />
-            </td>
-        </tr>
-
-        <tr>
-            <td>Lunar Hijri Offset: </td>
-            <td>
-                <input class="form-control"
-                       asp-for="PrayerTimeCalculatorModel.LunarHijriOffset"
-                       type="text"
-                       id="lunarHijriOffset"
-                       value="0" />
-            </td>
-        </tr>
-
-        <tr>
-            <td>Calculation Method: </td>
-            <td>
-                <select asp-for="PrayerTimeCalculatorModel.CalculationMethodPreset"
-                        asp-items="Html.GetEnumSelectList<CalculationMethodPreset>()"
-                        class="form-control">
-                    <option selected="selected" value="">Please select a calculation method</option>
-                </select>
-            </td>
-        </tr>
-
-        <tr>
-            <td>Timezone: </td>
-            <td>
-                <select asp-for="PrayerTimeCalculatorModel.TimeZone"
-                        asp-items="IndexModel.GetCountriesList()"
-                        class="form-control"
-                        id="countryDropDownList">
-                    <option selected="selected" value="">Please select your country</option>
-                </select>
-            </td>
-        </tr>
-        <tr>
-            <td>Daylight Savings Time: </td>
-            <td>
-                <input class="form-check-input"
-                       asp-for="PrayerTimeCalculatorModel.DayLightSavingsTime"
-                       type="checkbox"
-                       id="daylightSavingsTime" />
-            </td>
-        </tr>
-
-        <tr>
-            <td></td>
-            <td>
-                <input class="btn-primary"
-                       type="submit"
-                       value="Calculate"
-                       asp-page-handler="Submit" />
-            </td>
-        </tr>
-    </table>
-    <hr />
-</form>
-</div>
+<hr/>
 <div class="align-content-lg-end">
-    <p id="prayer-times" class="table-info table-success table-bordered">
-        @Html.Raw(Model.PrayerTimes)
-    </p>
+    @Html.Raw(Model.PrayerTimes)
 </div>
+
+<div class="container">
+
+    <form method="post" class="row g-3" novalidate>
+        <div class="col-md-4">
+            <label for="latitude" class="form-label">Latitude</label>
+            <input class="form-control"
+                   asp-for="PrayerTimeCalculatorModel.Latitude"
+                   type="text"
+                   id="latitude"
+                   required />
+        </div>
+        <div class="col-md-4">
+            <label for="longitude" class="form-label">Longitude</label>
+            <input class="form-control"
+                   asp-for="PrayerTimeCalculatorModel.Longitude"
+                   type="text"
+                   id="longitude"
+                   required />
+        </div>
+        <div class="col-md-4">
+            <label for="altitude" class="form-label">Altitude</label>
+            <input class="form-control"
+                   asp-for="PrayerTimeCalculatorModel.Altitude"
+                   type="text"
+                   id="altitude"
+                   required />
+        </div>
+        <div class="col-md-4">
+            <label for="calculation-date" class="form-label">Calculation Date</label>
+            <input class="form-control"
+                   asp-for="PrayerTimeCalculatorModel.CalculationDate"
+                   type="date"
+                   value="@DateTime.Now.ToString("yyyy-MM-dd")"
+                   id="calculation-date"
+                   required />
+        </div>
+        <div class="col-md-4">
+            <label for="lunar-hijri-date-offset" class="form-label">Lunar Hijri Date Offset (<span id="offset-value">0</span>)</label>
+            <input class="form-range"
+                   type="range"
+                   asp-for="PrayerTimeCalculatorModel.LunarHijriOffset"
+                   min="-3"
+                   max="3"
+                   id="lunar-hijri-date-offset"
+                   required
+                   onChange="document.getElementById('offset-value').innerText = document.getElementById('lunar-hijri-date-offset').value" />
+        </div>
+        <div class="col-md-4">
+            <label for="timezone-drop-down" class="form-label">Calculation Method</label>
+            <select asp-for="PrayerTimeCalculatorModel.CalculationMethodPreset"
+                    asp-items="IndexModel.GetCalculationModePresets()"
+                    class="form-select">
+                <option selected="selected" value="">Please select a calculation method</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="timezone-drop-down" class="form-label">Time Zone</label>
+            <select asp-for="PrayerTimeCalculatorModel.TimeZone"
+                    asp-items="IndexModel.GetCountriesList()"
+                    class="form-select"
+                    id="timezone-drop-down">
+                <option selected="selected" value="">Please select your timezone</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="dst-dropdown" class="form-label">Daylight Savings Time</label>
+            <select asp-for="PrayerTimeCalculatorModel.DayLightSavingsTime"
+                    class="form-select"
+                    id="dst-dropdown">
+                <option selected="selected" value="false">Daylight Savings Time is OFF</option>
+                <option value="true">Daylight Savings Time is ON</option>
+            </select>
+        </div>
+        <div class="d-grid gap-2">
+            <input class="btn btn-dark"
+                   type="submit"
+                   value="Calculate"
+                   asp-page-handler="Submit" />
+        </div>
+        <hr />
+    </form>
+</div>
+
 <div class="alert-danger">
     <p id="location-info">
 
     </p>
 </div>
 
-
 <script>
-
-
     window.onload = getLocation();
 
     var x = document.getElementById("location-info");
     var latForm = document.getElementById("latitude");
     var longForm = document.getElementById("longitude");
     var altForm = document.getElementById("altitude");
-
-
 
     function getLocation() {
         if (navigator.geolocation) {
@@ -144,7 +124,10 @@
 
         latForm.value = position.coords.latitude;
         longForm.value = position.coords.longitude;
-        altForm.value = position.coords.altitude;
-
+        if (position.coords.altitude === null) {
+            altForm.value = 0.0;
+        } else {
+            altForm.value = position.coords.altitude;
+        }
     }
 </script>
