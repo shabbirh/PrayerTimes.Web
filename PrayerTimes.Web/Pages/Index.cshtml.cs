@@ -1,9 +1,12 @@
-﻿using System.Globalization;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using NodaTime;
 using PrayerTimes.Library.Calculators;
+using PrayerTimes.Library.Enumerations;
 using PrayerTimes.Library.Helpers;
 using PrayerTimes.Library.Models;
 using PrayerTimes.Web.Models;
@@ -29,6 +32,7 @@ namespace PrayerTimes.Web.Pages
 
         }
 
+
         public void OnPostSubmit(PrayerTimeCalculatorModel prayerTimeCalculatorModel)
         {
             if (prayerTimeCalculatorModel.DayLightSavingsTime)
@@ -42,34 +46,49 @@ namespace PrayerTimes.Web.Pages
             var geo = new Geocoordinate(prayerTimeCalculatorModel.Latitude, prayerTimeCalculatorModel.Longitude, prayerTimeCalculatorModel.Altitude);
 
             var prayer = Prayers.On(when, settings, geo, prayerTimeCalculatorModel.TimeZone);
-            var solarDate = prayertimescore.PrayerTimes.Library.Calender.Calendar.ConvertToPersian(when.ToDateTimeUtc());
-            var lunarDate = prayertimescore.PrayerTimes.Library.Calender.Calendar.ConvertToIslamic(when.ToDateTimeUtc().AddDays(prayerTimeCalculatorModel.LunarHijriOffset));
-            var gregorianDate = when.ToDateTimeUtc();
+            var solarDate = prayertimescore.PrayerTimes.Library.Calender.Calendar.ConvertToPersian(prayerTimeCalculatorModel.CalculationDate);
+            var lunarDate = prayertimescore.PrayerTimes.Library.Calender.Calendar.ConvertToIslamic(prayerTimeCalculatorModel.CalculationDate.AddDays(prayerTimeCalculatorModel.LunarHijriOffset));
+            var gregorianDate = prayerTimeCalculatorModel.CalculationDate;
 
             var solarDateString = $" {solarDate.ToString("english_day")} {solarDate.ToString("english_month")} {solarDate.ToString("english_year")}";
 
             var sb = new StringBuilder();
             sb.AppendLine(
-                $"<b>Prayer times for location: {geo.Latitude:F4}, {geo.Longitude:F4} and altitude {geo.Altitude:F4}</b><br/>");
-            sb.AppendLine($"<b>Date: {gregorianDate:D} | Solar Hijri: {solarDateString} | Lunar Hijri: {lunarDate.ToString("english_formatted")}</b><br/>");
-            sb.AppendLine("<table class=\"table-info table-success table-bordered\">");
-            sb.AppendLine("<tr>");
-            sb.AppendLine(
-                "<th>Imsaak</th><th>Fajr</th><th>Sunrise</th><th>Dhuhr</th><th>Asr</th><th>Sunset</th><th>Maghreb</th><th>Isha</th><th>Midnight</th>");
-            sb.AppendLine("</tr>");
-            sb.AppendLine("<tr>");
-            sb.AppendLine($"<td>{GetPrayerTimeString(prayer.Imsak, prayerTimeCalculatorModel.TimeZone)}</td>");
-            sb.AppendLine($"<td>{GetPrayerTimeString(prayer.Fajr, prayerTimeCalculatorModel.TimeZone)}</td>");
-            sb.AppendLine($"<td>{GetPrayerTimeString(prayer.Sunrise, prayerTimeCalculatorModel.TimeZone)}</td>");
-            sb.AppendLine($"<td>{GetPrayerTimeString(prayer.Dhuhr, prayerTimeCalculatorModel.TimeZone)}</td>");
-            sb.AppendLine($"<td>{GetPrayerTimeString(prayer.Asr, prayerTimeCalculatorModel.TimeZone)}</td>");
-            sb.AppendLine($"<td>{GetPrayerTimeString(prayer.Sunset, prayerTimeCalculatorModel.TimeZone)}</td>");
-            sb.AppendLine($"<td>{GetPrayerTimeString(prayer.Maghrib, prayerTimeCalculatorModel.TimeZone)}</td>");
-            sb.AppendLine($"<td>{GetPrayerTimeString(prayer.Isha, prayerTimeCalculatorModel.TimeZone)}</td>");
-            sb.AppendLine($"<td>{GetPrayerTimeString(prayer.Midnight, prayerTimeCalculatorModel.TimeZone)}</td>");
-            sb.AppendLine("</tr>");
+                "<div class=\"alert alert-success\" role=\"alert\">");
+            sb.AppendLine("<table class=\"table table-dark table-hover table-bordered mb-12\"><tbody>");
+            sb.AppendLine("<tr><th>Dates</th></tr><tr>");
+            sb.AppendLine("<td><table class\"table table-light table-bordered\"><tr>");
+            sb.AppendLine($"<td scope=\"row\" class=\"col-1\">&nbsp;</td><td scope=\"row\" class=\"col-4\"><b>Gregorian</b></td><td scope=\"row\" class=\"col-1\">&nbsp;</td><td class=\"col-6\" >{gregorianDate:D}</td>");
+            sb.AppendLine("</tr><tr>");
+            sb.AppendLine($"<td scope=\"row\" class=\"col-1\">&nbsp;</td><td scope=\"row\" class=\"col-4\"><b>Solar Hijri</b></td><td scope=\"row\" class=\"col-1\">&nbsp;</td><td class=\"col-6\" >{solarDateString}</td>");
+            sb.AppendLine("</tr><tr>");
+            sb.AppendLine($"<td scope=\"row\" class=\"col-1\">&nbsp;</td><td scope=\"row\" class=\"col-4\"><b>Lunar Hijri</b></td><td scope=\"row\" class=\"col-1\">&nbsp;</td><td class=\"col-6\" >{lunarDate.ToString("english_formatted")}</td>");
+            sb.AppendLine("</tr></table></td><tr>");
+            sb.AppendLine("<tr><th>Prayer Times</th></tr><tr>");
+            sb.AppendLine("<td><table class\"table table-light table-bordered\"><tr>");
+            sb.AppendLine($"<td scope=\"row\" class=\"col-1\">&nbsp;</td><td scope=\"row\" class=\"col-4\"><b>Imsaak</b></td><td scope=\"row\" class=\"col-1\">&nbsp;</td><td class=\"col-6\" >{GetPrayerTimeString(prayer.Imsak, prayerTimeCalculatorModel.TimeZone)}</td>");
+            sb.AppendLine("</tr><tr>");
+            sb.AppendLine($"<td scope=\"row\" class=\"col-1\">&nbsp;</td><td scope=\"row\" class=\"col-4\"><b>Fajr</b></td><td scope=\"row\" class=\"col-1\">&nbsp;</td><td class=\"col-6\" >{GetPrayerTimeString(prayer.Fajr, prayerTimeCalculatorModel.TimeZone)}</td>");
+            sb.AppendLine("</tr><tr>");
+            sb.AppendLine($"<td scope=\"row\" class=\"col-1\">&nbsp;</td><td scope=\"row\" class=\"col-4\"><b>Sunrise</b></td><td scope=\"row\" class=\"col-1\">&nbsp;</td><td class=\"col-6\" >{GetPrayerTimeString(prayer.Sunrise, prayerTimeCalculatorModel.TimeZone)}</td>");
+            sb.AppendLine("</tr><tr>");
+            sb.AppendLine($"<td scope=\"row\" class=\"col-1\">&nbsp;</td><td scope=\"row\" class=\"col-4\"><b>Dhuhr</b></td><td scope=\"row\" class=\"col-1\">&nbsp;</td><td class=\"col-6\" >{GetPrayerTimeString(prayer.Dhuhr, prayerTimeCalculatorModel.TimeZone)}</td>");
+            sb.AppendLine("</tr><tr>");
+            sb.AppendLine($"<td scope=\"row\" class=\"col-1\">&nbsp;</td><td scope=\"row\" class=\"col-4\"><b>Asr</b></td><td scope=\"row\" class=\"col-1\">&nbsp;</td><td class=\"col-6\" >{GetPrayerTimeString(prayer.Asr, prayerTimeCalculatorModel.TimeZone)}</td>");
+            sb.AppendLine("</tr><tr>");
+            sb.AppendLine($"<td scope=\"row\" class=\"col-1\">&nbsp;</td><td scope=\"row\" class=\"col-4\"><b>Sunset</b></td><td scope=\"row\" class=\"col-1\">&nbsp;</td><td class=\"col-6\" >{GetPrayerTimeString(prayer.Sunset, prayerTimeCalculatorModel.TimeZone)}</td>");
+            sb.AppendLine("</tr><tr>");
+            sb.AppendLine($"<td scope=\"row\" class=\"col-1\">&nbsp;</td><td scope=\"row\" class=\"col-4\"><b>Maghrib</b></td><td scope=\"row\" class=\"col-1\">&nbsp;</td><td class=\"col-6\" >{GetPrayerTimeString(prayer.Maghrib, prayerTimeCalculatorModel.TimeZone)}</td>");
+            sb.AppendLine("</tr><tr>");
+            sb.AppendLine($"<td scope=\"row\" class=\"col-1\">&nbsp;</td><td scope=\"row\" class=\"col-4\"><b>Isha</b></td><td scope=\"row\" class=\"col-1\">&nbsp;</td><td class=\"col-6\" >{GetPrayerTimeString(prayer.Isha, prayerTimeCalculatorModel.TimeZone)}</td>");
+            sb.AppendLine("</tr><tr>");
+            sb.AppendLine($"<td scope=\"row\" class=\"col-1\">&nbsp;</td><td scope=\"row\" class=\"col-4\"><b>Midnight</b></td><td scope=\"row\" class=\"col-1\">&nbsp;</td><td class=\"col-6\" >{GetPrayerTimeString(prayer.Midnight, prayerTimeCalculatorModel.TimeZone)}</td>");
+            sb.AppendLine("</tr></table></td><tr>");
+            sb.AppendLine("</tbody></tr>");
             sb.AppendLine("</table>");
-          
+            sb.AppendLine("</div>");
+            sb.AppendLine("<hr/>");
+
             PrayerTimes = sb.ToString();
         }
 
@@ -128,6 +147,28 @@ namespace PrayerTimes.Web.Pages
                 }
             }
 
+            return returnList;
+        }
+
+        internal static string GetDescription(Enum value)
+        {
+            var attributes = value.GetType().GetField(value.ToString())?.GetCustomAttributes(typeof(DisplayAttribute), false);
+            return (attributes is {Length: 0} ? value.ToString() : ((DisplayAttribute)attributes?[0]!)?.Name) ?? string.Empty;
+        }
+
+        public static IEnumerable<SelectListItem> GetCalculationModePresets()
+        {
+            var values = Enum.GetValues(typeof(CalculationMethodPreset)).Cast<CalculationMethodPreset>();
+            var returnList = (from value in values
+                              where value != CalculationMethodPreset.Custom
+                              select new SelectListItem
+                              {
+                                  Disabled = false,
+                                  Group = null,
+                                  Selected = false,
+                                  Text = GetDescription(value),
+                                  Value = Enum.GetName(value)
+                              }).ToList();
             return returnList;
         }
     }
