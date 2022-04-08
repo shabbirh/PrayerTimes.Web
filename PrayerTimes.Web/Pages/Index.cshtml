@@ -1,16 +1,10 @@
 ﻿@page
-@using PrayerTimes.Library.Enumerations
 @model IndexModel
 
 @{
     ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Muslim Prayer Time Calculator</h1>
-    <p>Calculate the prayer times for your current location (multiple methods).</p>
-</div>
-<hr/>
 <div class="align-content-lg-end">
     @Html.Raw(Model.PrayerTimes)
 </div>
@@ -71,7 +65,7 @@
             </select>
         </div>
         <div class="col-md-6">
-            <label for="timezone-drop-down" class="form-label">Time Zone</label>
+            <label for="timezone-drop-down" class="form-label">Time Zone (Detected: <span id="detected-timezone"></span>)</label>
             <select asp-for="PrayerTimeCalculatorModel.TimeZone"
                     asp-items="IndexModel.GetCountriesList()"
                     class="form-select"
@@ -106,11 +100,39 @@
 
 <script>
     window.onload = getLocation();
+    //window.onload = addLocalTimezone();
+    
 
     var x = document.getElementById("location-info");
     var latForm = document.getElementById("latitude");
     var longForm = document.getElementById("longitude");
     var altForm = document.getElementById("altitude");
+    var timezoneSpan = document.getElementById("detected-timezone");
+    //timezoneSpan.innerHTML = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    //function addLocalTimezone()
+    //{
+    //    //fetch("http://api.namaaz.net/api/timezoneConverter")
+    //    //    .then( res => res.json())
+    //    //    .then(response => {
+    //    //        processUserData(response)
+    //    //    })
+    //    //    .catch(status => {
+    //    //        ipLookup()
+    //    //    })
+
+
+    //    // Create an Option object       
+    //    var opt = document.createElement("option");        
+
+    //    // Assign text and value to Option object
+    //    opt.text = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    //    opt.value = "Something";
+    //    opt.selected = true;
+
+    //    // Add an Option object to Drop Down List Box
+    //    document.getElementById('timezone-drop-down').options.add(opt);
+    //}
 
     function getLocation() {
         if (navigator.geolocation) {
