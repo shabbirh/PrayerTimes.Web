@@ -19,4 +19,10 @@
     <PackageReference Include="TimeZoneNames" Version="5.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Documentation\Documentation.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
