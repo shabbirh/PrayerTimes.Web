@@ -3,16 +3,16 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - PrayerTimes.Web 0.2a</title>
+    <title>@ViewData["Title"] - PrayerTimes (Namaaz)</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/PrayerTimes.Web.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark border-bottom box-shadow mb-3">
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">PrayerTimes.Web 0.2a</a>
+                <a class="navbar-brand" asp-area="" asp-page="/Index">PrayerTimes (Namaaz)</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
@@ -22,6 +22,15 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Index">Home</a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="/Documentation">Documentation</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="https://github.com/shabbirh" target="_blank">Github</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="https://hub.docker.com/u/shabbirh" target="_blank">Docker</a>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -29,13 +38,18 @@
     </header>
     <div class="container">
         <main role="main" class="pb-3">
+            <div class="text-center">
+                <h1 class="display-4">Muslim Prayer (Namaaz) Time Calculator</h1>
+                <p>Calculate the prayer times for your current location (multiple methods).</p>
+            </div>
+            <hr/>
             @RenderBody()
         </main>
     </div>
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2022 Shabbir Hassanally | Github: <a href="https://github.com/shabbirh/prayertimescore" target="_blank">Library</a> | <a href="https://github.com/shabbirh/PrayerTimes.Web" target="_blank">WebApp</a> 
+            <a class="nav-link text-dark" href="https://www.gnu.org/licenses/copyleft.en.html" title="Copyleft 2022 Shabbir Hassanally" target="_blank">Copyleft &copy; 2022 Shabbir Hassanally</a>
         </div>
     </footer>
 
