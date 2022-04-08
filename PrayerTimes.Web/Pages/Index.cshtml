@@ -65,7 +65,7 @@
             </select>
         </div>
         <div class="col-md-6">
-            <label for="timezone-drop-down" class="form-label">Time Zone (Detected: <span id="detected-timezone"></span>)</label>
+            <label for="timezone-drop-down" class="form-label">Time Zone@* (Detected: <span id="detected-timezone"></span>)*@</label>
             <select asp-for="PrayerTimeCalculatorModel.TimeZone"
                     asp-items="IndexModel.GetCountriesList()"
                     class="form-select"
