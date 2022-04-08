@@ -1,0 +1,385 @@
+﻿<h2>In His Name, the Most High</h2>
+
+
+<h2 id="preamble">Preamble</h2>
+<p>
+    Muslims perform five prayers a day. Each prayer is given a certain prescribed time during which it must be performed.
+    This document briefly describes these times and explains how they can be calculated mathematically, with appropriate formulea provided.  This document forms the basis of how the library used by this website calculates the prayer times.
+</p>
+<h2 id="definitions">Definitions</h2>
+<p>To determine the exact period for each prayer (and also for fasting), we need to determine ten points of time per a day. These times are defined in the following table:</p>
+<div class="table-responsive">
+    <table class="table table-dark table-hover">
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Definition</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Imsak</td>
+                <td>The time to stop eating when fasting (in Ramadhan), slightly before Fajr.</td>
+            </tr>
+            <tr>
+                <td>Fajr</td>
+                <td>At the actual break of dawn.</td>
+            </tr>
+            <tr>
+                <td>Sunrise</td>
+                <td>The time at which the first part of the Sun appears above the horizon.</td>
+            </tr>
+            <tr>
+                <td>Dhuha</td>
+                <td>The time at which the Sun fully appears above the horizon (i.e. the completion of Sunrise).</td>
+            </tr>
+            <tr>
+                <td>Dhuhr</td>
+                <td>When the Sun begins to decline after reaching its highest point in the sky.</td>
+            </tr>
+            <tr>
+                <td>Asr</td>
+                <td>The time when the length of any object&#39;s shadow reaches a factor (usually 1 or 2) of the length of the object itself plus the length of that object&#39;s shadow at noon.</td>
+            </tr>
+            <tr>
+                <td>Sunset</td>
+                <td>The time at which the Sun disappears below the horizon.</td>
+            </tr>
+            <tr>
+                <td>Maghreb</td>
+                <td>Soon after sunset.</td>
+            </tr>
+            <tr>
+                <td>Isha</td>
+                <td>The time at which darkness falls, and there is no scattered light in the sky.</td>
+            </tr>
+            <tr>
+                <td>Midnight</td>
+                <td>The mean time from sunset to sunrise (or from Maghreb to Fajr, in some schools of thought).</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<p>What follows is information on how to calculate the above times mathematically for any location if the coordinates of the site are known.  This forms the basis of his this library/API works.</p>
+<h2 id="astronomical-measures">Astronomical Measures</h2>
+<p>There are two astronomical measures that are essential for computing prayer times. These two measures are the equation of time and the declination of the Sun.</p>
+<p>The equation of time is the difference between time as read from a sundial and a clock. It results from an apparent irregular movement of the Sun caused by a combination of the obliquity of the Earth&#39;s rotation axis and the eccentricity of its orbit. The sundial can be ahead (fast) by as much as 16min 33s (around November 3) or fall behind by as much as 14min 6s (around February 12), as shown in the following graph:</p>
+<p>
+    <figure class="figure">
+        <img src="img/doc/equation-of-time.png" class="figure-img img-fluid rounded img-thumbnail" alt="The Equation of Time" title="The Equation of Time">
+        <figcaption class="figure-caption">The Equation of Time.</figcaption>
+    </figure>
+</p>
+<p>The declination of the Sun is the angle between the rays of the sun and the plane of the Earth&#39;s equator. The declination of the Sun changes continuously throughout the year. This is a consequence of the Earth&#39;s tilt (that is the difference in its rotational and revolutionary axes).</p>
+<p>
+    <figure class="figure">
+        <img src="img/doc/declination-of-the-sun.png" class="figure-img img-fluid rounded img-thumbnail" alt="The Declination of Sun" title="The Declination of Sun">
+        <figcaption class="figure-caption">The Declination of Sun.</figcaption>
+    </figure>
+</p>
+<p>The above two astronomical measures can be obtained accurately from <a href="https://astro.ukho.gov.uk/nao/publicat/sals.html" target="_blank">The Star Almanac</a>, or can be calculated approximately. The following algorithm from <a href="https://www.usno.navy.mil/USNO/astronomical-applications/astronomical-information-center/approx-solar" title="Approximate Solar Coordinates from the US Naval Observatory" target="_blank">U.S. Naval Observatory</a> (<a href="https://web.archive.org/web/20120314160618/https://www.usno.navy.mil/USNO/astronomical-applications/astronomical-information-center/approx-solar" target="_blank" title="Approximate Solar Coordinates from the US Naval Observatory - Alternative Link">Alternative Link</a>) computes the Sun&#39;s angular coordinates to an accuracy of about 1 arc-minute within two centuries of 2000.</p>
+<blockquote class="blockquote">
+    <pre><code class="lang-csharp">d = jd - <span class="hljs-number">2451545.0</span>;  <span class="hljs-comment">// jd is the given Julian date </span>
+
+g = <span class="hljs-number">357.529</span> + <span class="hljs-number">0.98560028</span>* d;
+q = <span class="hljs-number">280.459</span> + <span class="hljs-number">0.98564736</span>* d;
+L = q + <span class="hljs-number">1.915</span>* sin(g) + <span class="hljs-number">0.020</span>* sin(<span class="hljs-number">2</span>*g);
+
+R = <span class="hljs-number">1.00014</span> - <span class="hljs-number">0.01671</span>* cos(g) - <span class="hljs-number">0.00014</span>* cos(<span class="hljs-number">2</span>*g);
+e = <span class="hljs-number">23.439</span> - <span class="hljs-number">0.00000036</span>* d;
+RA = arctan2(cos(e)* sin(L), cos(L))/ <span class="hljs-number">15</span>;
+
+D = arcsin(sin(e)* sin(L));  <span class="hljs-comment">// declination of the Sun</span>
+EqT = q/<span class="hljs-number">15</span> - RA;  <span class="hljs-comment">// equation of time</span>
+</code></pre>
+</blockquote>
+<h2 id="calculating-prayer-times">Calculating Prayer Times</h2>
+<p>To calculate the prayer times for a given location, we need to know the latitude (Lat) and the longitude (Lng) of the location, along with the local Time zone for that location.</p>
+<p>We also obtain the equation of time (EqT) and the declination of the Sun (D) for a given date using the algorithm mentioned above.</p>
+<h3 id="dhuhr">Dhuhr</h3>
+<p>Dhuhr can be calculated easily using the following formula:</p>
+<blockquote class="blockquote">
+<pre><code class="lang-csharp"><span class="hljs-attr">Dhuhr</span> = <span class="hljs-number">12</span> + TimeZone - Lng/<span class="hljs-number">15</span> - EqT.
+</code></pre>
+</blockquote>
+<p>The above formula indeed calculates the midday time, when the Sun reaches its highest point in the sky. A slight margin is usually considered for Dhuhr as explained below:</p>
+<h4 id="a-note-on-dhuhr">A Note on Dhuhr</h4>
+<p>Dhuhr has been defined in several ways in the fiqh (Islamic Judicial Law) literature:</p>
+<ol>
+    <li>When the Sun begins to decline (Zawaal) after reaching its highest point in the sky.</li>
+    <li>When the shadow of an indicator (a vertical stick) reaches its minimum length and starts to increase.</li>
+    <li>When the Sun&#39;s disk comes out of its zenith line, which is a line between the observer and the center of the Sun when it is at the highest point.</li>
+</ol>
+<p>The first and the second definitions are equivalent, as the shadow length has a direct correlation to the Sun&#39;s elevation in the sky via the following formula:</p>
+<blockquote class="blockquote">
+<pre><code class="lang-csharp"><span class="hljs-attr">ShadowLength</span> = Object Height × cot(SunAngle).
+</code></pre>
+</blockquote>
+<p>The Sun&#39;s angle is a continuous function over time and has only one peak point (the point at which the tangent to its curve has zero slope) which is realized exactly at midday. Therefore, according to the first two definitions, Dhuhr begins immediately after the midday.</p>
+<p>The third definition is slightly different from the previous two definitions. According to this definition, Sun must passes its zenith line before Dhuhr starts. We need the following information to calculate this time:</p>
+<ul>
+    <li>The radius of the Sun (<strong>r</strong>): 695,500 km</li>
+    <li>Distance between the Sun and the Earth (<strong>d</strong>): 147,098,074 km to 152,097,701 km</li>
+</ul>
+<p>Having <strong>r</strong> and <strong>d</strong>, the time <strong>t</strong> needed for Sun to pass its zenith line can be computed using the following formula:</p>
+<blockquote class="blockquote">
+<pre><code class="lang-csharp">t = arctan(r/d) / <span class="hljs-number">2</span>π × <span class="hljs-number">24</span> × <span class="hljs-number">60</span> × <span class="hljs-number">60</span>
+</code></pre>
+</blockquote>
+<p>The maximum value obtained by the above formula (which corresponds to the minimum Sun-Earth distance) is 65.0 seconds. Therefore, it takes approximately 1 minute until Sun&#39;s disk comes out of its zenith that should be considered into consideration for calculating Dhuhr, if the third definition is used.</p>
+<p>There are three definitions for the Dhuhr time as described above. According to the first two definitions, Dhuhr = midday, and according to the third definition, Dhuhr = midday + 65 sec.</p>
+<h3 id="sunrise-and-sunset">Sunrise and Sunset</h3>
+<p>The time difference between the mid-day and the time at which sun reaches an angle α below the horizon can be computed using the following formula:</p>
+<p>
+    <figure class="figure">
+        <img src="img/doc/twilight-formula.png" class="figure-img img-fluid rounded img-thumbnail" alt="Twilight/Sunset calculation formula" title="Twilight/Sunset calculation formula">
+        <figcaption class="figure-caption">Twilight/Sunset calculation formula.</figcaption>
+    </figure>
+</p>
+<p>Astronomical sunrise and sunset occurs at α=0.</p>
+<p>However, due to the refraction of light by terrestrial atmosphere, actual sunrise appears slightly before astronomical sunrise, and actual sunset occurs after astronomical sunset.</p>
+<p>Actual sunrise and sunset can be computed using the following formulae:</p>
+<blockquote class="blockquote">
+<pre><code class="lang-csharp"><span class="hljs-attr">Sunrise</span> = Dhuhr - T(<span class="hljs-number">0.833</span>)
+<span class="hljs-attr">Sunset</span> = Dhuhr + T(<span class="hljs-number">0.833</span>)
+</code></pre>
+</blockquote>
+<p>If the observer&#39;s location is higher than the surrounding terrain, we can consider this elevation into consideration by increasing the above constant 0.833 by 0.0347 × sqrt(h), where h is the observer&#39;s height in meters.</p>
+<p>This would make the fomulae:</p>
+<blockquote class="blockquote">
+<pre><code class="lang-csharp">Sunrise = Dhuhr - T(<span class="hljs-number">0.8333</span> + (<span class="hljs-number">0.0347</span> * sqrt(h)))
+Sunrise = Dhuhr + T(0.8333 + (0.0347 * sqrt(<span class="hljs-name">h</span>)))
+</code></pre>
+</blockquote>
+<h3 id="fajr-and-isha">Fajr and Isha</h3>
+<p>There are differing opinions on what angle to be used for calculating Fajr and Isha.</p>
+<p>The following table shows several conventions currently in use in various countries:</p>
+<div class="table-responsive">
+    <table class="table table-dark table-hover">
+        <thead>
+            <tr>
+                <th>Method Code</th>
+                <th>Convention</th>
+                <th>Fajr Angle</th>
+                <th>Isha Angle</th>
+                <th>Regions Using Convention</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>MWL</td>
+                <td>Muslim World League</td>
+                <td>18°</td>
+                <td>17°</td>
+                <td>Europe, Far East, parts of US</td>
+            </tr>
+            <tr>
+                <td>ISNA</td>
+                <td>Islamic Society of North America (ISNA)</td>
+                <td>15°</td>
+                <td>15°</td>
+                <td>North America (US and Canada)</td>
+            </tr>
+            <tr>
+                <td>EGYPT</td>
+                <td>Egyptian General Authority of Survey</td>
+                <td>19.5°</td>
+                <td>17.5°</td>
+                <td>Africa, Syria, Lebanon, Malaysia</td>
+            </tr>
+            <tr>
+                <td>MAKKAH</td>
+                <td>Umm al-Qura University, Makkah</td>
+                <td>18.5° (was 19° before December 2008/Muharram 1430)</td>
+                <td>90mins after Maghreb (120m during Ramadhan)</td>
+                <td>Arabian Peninsula</td>
+            </tr>
+            <tr>
+                <td>KARACHI</td>
+                <td>University of Islamic Sciences, Karachi</td>
+                <td>18°</td>
+                <td>18°</td>
+                <td>Pakistan, Afghanistan, Bangladesh, India</td>
+            </tr>
+            <tr>
+                <td>TEHRAN</td>
+                <td>Institute of Geophysics, University of Tehran</td>
+                <td>17.7°</td>
+                <td>14°  (the Isha angle is not explicitly defined in the Tehran method)</td>
+                <td>Iran, Some Shia communities</td>
+            </tr>
+            <tr>
+                <td>ITHNAASHERI</td>
+                <td>Shia Ithna Ashari, Leva Research Institute, Qum</td>
+                <td>16°</td>
+                <td>14°</td>
+                <td>Some Shia communities worldwide</td>
+            </tr>
+            <tr>
+                <td>SINGAPURA</td>
+                <td>Majlis Ugama Islam Singapura</td>
+                <td>20°</td>
+                <td>18°</td>
+                <td>Muslim communities in Singapore</td>
+            </tr>
+            <tr>
+                <td>UOIOOF</td>
+                <td>Union of Islamic Organisations of France</td>
+                <td>12°</td>
+                <td>12°</td>
+                <td>Some Muslim communities in France and parts of Europe</td>
+            </tr>
+            <tr>
+                <td>JAKIM</td>
+                <td>Department of Islamic Advancement, Malaysia (JAKIM)</td>
+                <td>20°</td>
+                <td>18°</td>
+                <td>Muslim communities in Malaysia</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<p>As an example, according the Shia Ithna Ashari, Leva Research Institute, Qum:</p>
+<blockquote class="blockquote">
+<pre><code class="lang-csharp">Fajr = Dhuhr - <span class="hljs-built_in">T</span>(<span class="hljs-number">16</span>) <span class="hljs-built_in">and</span> Isha = Dhuhr + <span class="hljs-built_in">T</span>(<span class="hljs-number">14</span>)
+</code></pre>
+</blockquote>
+<h3 id="asr">Asr</h3>
+<p>There are two main opinions on how to calculate Asr time. The majority of schools (including Shafi&#39;i, Maliki, Ja&#39;fari, and Hanbali) say it is at the time when the length of any object&#39;s shadow equals the length of the object itself plus the length of that object&#39;s shadow at noon.</p>
+<p>The dominant opinion in the Hanafi school says that Asr begins when the length of any object&#39;s shadow is twice the length of the object plus the length of that object&#39;s shadow at noon.</p>
+<p>The following formula computes the time difference between the mid-day and the time at which the object&#39;s shadow equals t times the length of the object itself plus the length of that object&#39;s shadow at noon:</p>
+<p>
+    <figure class="figure">
+        <img src="img/doc/asr-formula.png" class="figure-img img-fluid rounded img-thumbnail" alt="Asr calculation formula" title="Asr calculation formula">
+        <figcaption class="figure-caption">Asr calculation formula.</figcaption>
+    </figure>
+</p>
+<p>Therefore, in the first four schools of thought the formula would be:</p>
+<blockquote class="blockquote">
+<pre><code class="lang-csharp"><span class="hljs-attr">Asr</span> = Dhuhr + A(<span class="hljs-number">1</span>)
+</code></pre>
+</blockquote>
+<p>Whereas in the Hanafi school the formula would be:</p>
+<blockquote class="blockquote">
+<pre><code class="lang-csharp"><span class="hljs-attr">Asr</span> = Dhuhr + A(<span class="hljs-number">2</span>)
+</code></pre>
+</blockquote>
+<h3 id="maghreb">Maghreb</h3>
+<p>In the opinion of the Sunni schools of Islamic Judicial Law, the time for Maghreb prayer begins once the Sun has completely set beneath the horizon, that is:</p>
+<blockquote class="blockquote">
+<pre><code class="lang-csharp"><span class="hljs-attr">Maghreb</span> = Sunset
+</code></pre>
+</blockquote>
+<p>It should be noted that within the Sunni Judicial Law, some calculators suggest 1 to 3 minutes after Sunset on the basis of a precaution.</p>
+<p>Shia Judicial Law suggests that, as long as the redness in the eastern sky appearing after sunset has not passed overhead, Maghreb prayer should not be performed. It is usually taken into consideration by assuming a twilight angle (as shown in the tables above):</p>
+<blockquote class="blockquote">
+<pre><code class="lang-csharp"><span class="hljs-attr">Maghreb</span> = Dhuhr + T(<span class="hljs-number">4</span>).
+</code></pre>
+</blockquote>
+<h3 id="midnight">Midnight</h3>
+<p>Midnight is generally calculated as the mean time from Sunset to Sunrise:</p>
+<blockquote class="blockquote">
+<pre><code class="lang-csharp"><span class="hljs-attr">Midnight</span> = <span class="hljs-number">1</span>/<span class="hljs-number">2</span>(Sunrise - Sunset)
+</code></pre>
+</blockquote>
+<p>However, the Shia Jurists opine that the juridical midnight (the ending time for performing Isha prayer) is the mean time from Sunset to Fajr:</p>
+<blockquote class="blockquote">
+<pre><code class="lang-csharp"><span class="hljs-attr">Midnight</span> = <span class="hljs-number">1</span>/<span class="hljs-number">2</span>(Fajr - Sunset)
+</code></pre>
+</blockquote>
+<h2 id="higher-latitudes">Higher Latitudes</h2>
+<p>In locations at higher latitude, twilight may persist throughout the night during some months of the year.</p>
+<p>In these abnormal periods, the determination of Fajr and Isha is not possible using the usual formulas as described above. In order to overcome this problem, several solutions have been proposed, three of which are described below:</p>
+<h3 id="middle-of-the-night">Middle of the Night</h3>
+<p>
+    In this method, the period from sunset to sunrise is divided into two halves.
+    The first half is considered to be the &quot;night&quot; and the other half as &quot;day break&quot;.
+    Fajr and Isha in this method are assumed to be at mid-night during the abnormal periods.
+</p>
+<h3 id="one-seventh-of-the-night">One-Seventh of the Night</h3>
+<p>
+    In this method, the period between sunset and sunrise is divided into seven parts.
+    Isha begins after the first one-seventh part, and Fajr is at the beginning of the seventh part.
+</p>
+<h3 id="angle-based-method">Angle-Based Method</h3>
+<p>This is an intermediate solution, used by some recent prayer time calculators.</p>
+<blockquote class="blockquote">
+<pre><code class="lang-csharp"><span class="hljs-selector-tag">var</span> α == TheTwilightAngleForIsha, 
+<span class="hljs-selector-tag">var</span> t = α/<span class="hljs-number">60</span>.
+</code></pre>
+</blockquote>
+<p>
+    The period between sunset and sunrise is divided into t parts.
+    Isha begins after the first part.
+</p>
+<p>For example, if the twilight angle for Isha is 15, then Isha begins at the end of the first quarter (15/60) of the night.</p>
+<p>Time for Fajr is calculated similarly.</p>
+<p>In case Maghreb is not equal to Sunset, we can apply the above rules to Maghreb as well to make sure that Maghreb always falls between Sunset and Isha during the abnormal periods.</p>
+<h2 id="acknowledgements">Acknowledgments</h2>
+<p>This project is built on the excellent work <a href="http://praytimes.org/" title="Prayer Times Calculation" target="_blank">PrayTimes.org</a> by Hamid Zarrabi-Zadeh.</p>
+<h2 id="development-considerations">Development Considerations</h2>
+<p>I have taken the formulae and calculations, sanity checked them as applicable, and examined the source code that various other contributors have written - found at <a href="http://praytimes.org/wiki/Code" title="Prayer Times Code Snippets" target="_blank">Prayer Times Code Snippets</a>.  However, given that some of the code is extremely out-dated, and in some cases doesn&#39;t work as it should, I have decided to re-write the code, fixing coding issues and ensuring the algorithms required are correctly implemented.  The code has been built using Microsoft dotnet, and is available as a <a href="https://www.nuget.org/packages/PrayerTimes.Library/" title="Prayer Times Nuget Package" target="_blank">nuget package</a>, as an <a href="https://api.namaaz.net/swagger">api</a> (which can be self-hosted as a <a href="https://hub.docker.com/r/shabbirh/prayertimesapi" title="Prayer Times Api Docker Container Image at Docker Hub" target="_blank">docker container</a> and for which the <a href="https://github.com/shabbirh/PrayerTimes.Api" title="Source code for Prayer Times Api" target="_blank">source code</a> is also available), and off course the <a href="https://github.com/shabbirh/PrayerTimes.Web" title="Source code this website" target="_blank">source code</a> for this site (also available as a <a href="https://hub.docker.com/r/shabbirh/prayertimesweb" title="Docker container for this website at Docker Hub" target="_blank">docker container</a>).</p>
+<p>The source code for the Library is available on <a href="https://github.com/shabbirh/prayertimescore" title="Prayer Times Library on Github" target="_blank">Github</a>.</p>
+<h2 id="disclaimer">Disclaimer</h2>
+<p>It should be noted that while every effort has been taken to ensure the veracity of the calculations provided by the library, and a great deal of testing has been placed, this is provided AS-IS, with no warranty or claim that it is completely accurate and without flaws.</p>
+<h2 id="related-links">Related Projects</h2>
+<div class="table-responsive">
+    <table class="table table-dark table-hover">
+        <thead>
+            <tr>
+                <th>Project</th>
+                <th>Availability</th>
+                <th>Purpose</th>
+                <th>License</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>PrayerTimes.Library</td>
+                <td><a class="btn btn-outline-light" href="https://github.com/shabbirh/prayertimescore" title="PrayerTimes.Library on Github" target="_blank">GitHub</a></td>
+                <td>Library project</td>
+                <td><a class="btn btn-outline-light" href="https://www.gnu.org/licenses/lgpl-3.0.html" title="GNU Lesser General Public License" target="_blank">GNU Lesser General Public License</a></td>
+            </tr>
+            <tr>
+                <td>PrayerTimes.Api</td>
+                <td><a class="btn btn-outline-light" href="https://github.com/shabbirh/PrayerTimes.Api" title="PrayerTimes.Api on Github" target="_blank">GitHub</a> <a class="btn btn-outline-light" href="https://hub.docker.com/r/shabbirh/prayertimesapi" title="PrayerTimes.Api on DockerHub" target="_blank">Docker</a></td>
+                <td>Web based RESTful API</td>
+                <td><a class="btn btn-outline-light" href="https://www.gnu.org/licenses/lgpl-3.0.html" title="GNU Lesser General Public License" target="_blank">GNU Lesser General Public License</a></td>
+            </tr>
+            <tr>
+                <td>PrayerTimes.Web</td>
+                <td><a class="btn btn-outline-light" href="https://github.com/shabbirh/PrayerTimes.Web" title="PrayerTimes.Web on Github" target="_blank">GitHub</a> <a class="btn btn-outline-light" href="https://hub.docker.com/r/shabbirh/prayertimesweb" title="PrayerTimes.Web on DockerHub" target="_blank">Docker</a></td>
+                <td>Web Application</td>
+                <td><a class="btn btn-outline-light" href="https://www.gnu.org/licenses/lgpl-3.0.html" title="GNU Lesser General Public License" target="_blank">GNU Lesser General Public License</a></td>
+            </tr>
+            <tr>
+                <td>PrayerTimes.Mobile</td>
+                <td><a class="btn btn-outline-light" href="#" title="PrayerTimes.Mobile on Github" target="_blank">GitHub</a></td>
+                <td>Mobile Application (Cross Platform)</td>
+                <td><a class="btn btn-outline-light" href="https://www.gnu.org/licenses/lgpl-3.0.html" title="GNU Lesser General Public License" target="_blank">GNU Lesser General Public License</a></td>
+            </tr>
+            <tr>
+                <td>PrayerTimes.Browser</td>
+                <td><a class="btn btn-outline-light" href="#" title="PrayerTimes.Browser on Github" target="_blank">GitHub</a></td>
+                <td>Browser Plugin/Extension/Add-on (Cross Platform/Browser)</td>
+                <td><a class="btn btn-outline-light" href="https://www.gnu.org/licenses/lgpl-3.0.html" title="GNU Lesser General Public License" target="_blank">GNU Lesser General Public License</a></td>
+            </tr>
+
+        </tbody>
+    </table>
+</div>
+<h2 id="licensing">Licensing</h2>
+<p>The full source code (library, website, api, mobile apps) are made available (under the <a href="https://www.gnu.org/licenses/lgpl-3.0.html" title="GNU Lesser General Public License" target="_blank">GNU Lesser General Public License</a>).</p>
+<p>
+    <figure class="figure">
+        <img src="img/doc/license-lgpl-final.png" class="figure-img img-fluid rounded img-thumbnail" alt="GNU Lesser General Public License" title="GNU Lesser General Public License">
+        <figcaption class="figure-caption">GNU Lesser General Public License (Summary via Github).</figcaption>
+    </figure>
+</p>
+<h2 id="credits">Credits</h2>
+<p>The following projects have been very useful in building the prayer times library that is used by this project, and deserve to be acknowledged:</p>
+<ul>
+    <li><a href="https://github.com/stankovski/prayer-times">https://github.com/stankovski/prayer-times</a></li>
+    <li><a href="https://github.com/mohamedmansour/prayer-times-extension">https://github.com/mohamedmansour/prayer-times-extension</a></li>
+    <li><a href="https://github.com/zulfahmi93/prayer-times/">https://github.com/zulfahmi93/prayer-times/</a></li>
+</ul>
