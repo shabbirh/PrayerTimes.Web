@@ -13,10 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Markdig" Version="0.28.1" />
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.0" />
-    <PackageReference Include="PrayerTimes.Library" Version="1.0.5" />
-    <PackageReference Include="TimeZoneNames" Version="5.0.1" />
+    <PackageReference Include="Markdig" Version="0.31.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
+    <PackageReference Include="PrayerTimes.Library" Version="1.0.6" />
+    <PackageReference Include="TimeZoneNames" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
